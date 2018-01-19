@@ -1,3 +1,8 @@
 .idea
 CIM-Client.iml
 /out
+/bin
+
+\.project
+
+\.classpath
