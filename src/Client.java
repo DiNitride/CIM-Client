@@ -1,4 +1,4 @@
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -7,15 +7,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-public class Client extends JFrame {
+public class Client extends JPanel {
 
 	private boolean         closed          = true;
     private String          host            = "localhost";
@@ -29,17 +24,15 @@ public class Client extends JFrame {
 
     public Client() {
 
-        setTitle("CIM Messenger");
-        ImageIcon img = new ImageIcon("resources/ico.png");
-        setIconImage(img.getImage());
-        setSize(500, 500);
-        setResizable(false);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+        GridBagConstraints c = new GridBagConstraints();
 
         input = new JTextField(30);
         input.setBorder(new EmptyBorder(10, 10, 10, 10));
         input.addActionListener(new EnterAction());
+
         output = new JTextArea();
+        output.setPreferredSize(new Dimension(50,50));
         output.setLineWrap(true);
         output.setEditable(false);
         output.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -48,15 +41,19 @@ public class Client extends JFrame {
         add(scrollOutput, BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
 
-        setVisible(true);
-        this.connect();
-        
-
     }
 
-    private void connect() {
-    	
-    	addMessage("Attempting to connect to server at '" + this.host + "' . . .");
+    public void sendMessage(String message) {
+        outputStream.println(message);
+    }
+
+    public void addMessageToView(String message) {
+        this.output.append(message + "\n");
+    }
+
+    public void connect() {
+
+        addMessageToView("Attempting to connect to server at '" + this.host + "' . . .");
     	
         try {
             clientSocket = new Socket(this.host, this.port);
@@ -65,25 +62,20 @@ public class Client extends JFrame {
             outputStream = new PrintWriter(this.clientSocket.getOutputStream(), true);
         } catch (java.net.ConnectException ex) {
         	System.out.println("Error connecting");
-        	addMessage("Error connecting to server! Please retry");
+        	addMessageToView("Error connecting to server! Please retry");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
     }
-    
-    public void addMessage(String message) {
-    	Client.this.output.append(message + "\n");
-    }
 
     class EnterAction implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            Client.this.outputStream.println(Client.this.input.getText());
+            Client.this.sendMessage(Client.this.input.getText());
             Client.this.output.setCaretPosition(output.getDocument().getLength());
             Client.this.input.setText("");
         }
-
     }
 
     class ReceiveThread extends Thread implements Runnable {
@@ -95,7 +87,7 @@ public class Client extends JFrame {
                     String msg;
                     while ((msg = socketIn.readLine()) != null) {
                         System.out.println(msg);
-                        Client.this.addMessage(msg);
+                        Client.this.addMessageToView(msg);
                     }
                 }
             } catch (IOException ex) {
@@ -104,5 +96,6 @@ public class Client extends JFrame {
         }
 
     }
+
 }
 
