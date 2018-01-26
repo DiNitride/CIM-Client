@@ -33,7 +33,10 @@ public class Window extends JFrame {
 
         final Dimension FIELD_SIZE = new Dimension(300, 30);
 
-        JLabel title;
+        private String password, username, host;
+        private int port;
+
+        JLabel title, host_label, port_label, user_label, password_label;
         JButton login_button;
         JTextField host_field, port_field, username_field;
         JPasswordField password_field;
@@ -47,24 +50,52 @@ public class Window extends JFrame {
 
             GridBagConstraints c = new GridBagConstraints();
 
-            c.fill = GridBagConstraints.BOTH;
-            c.gridx = 0;
+            // Grid Bag Coordinate Design
+            //  +-------------------------------------+
+            //  |                                     |
+            //  |                                     |
+            //  |            0            1           |
+            //  |                                     |
+            //  |         +---------------------+     |
+            //  |    0    |        Title        |     |
+            //  |         +---------------------+     |
+            //  |                                     |
+            //  |    1    Address  +------------+     |
+            //  |                  +------------+     |
+            //  |                                     |
+            //  |    2    Port     +------------+     |
+            //  |                  +------------+     |
+            //  |                                     |
+            //  |    3    Username +------------+     |
+            //  |                  +------------+     |
+            //  |                                     |
+            //  |    4    Password +------------+     |
+            //  |                  +------------+     |
+            //  |                                     |
+            //  |    5    +---------------------+     |
+            //  |         |        Login        |     |
+            //  |         +---------------------+     |
+            //  |                                     |
+            //  +-------------------------------------+
 
-            title = new JLabel("CIM Messenger", SwingConstants.CENTER);
-            title.setFont(new Font("", Font.PLAIN, 40));
-            c.insets = new Insets(10, 10, 10 , 10);
-            c.gridy = 0;
-            centerPanel.add(title, c);
+            // Text Entry
+
+            c.fill = GridBagConstraints.BOTH;
+            c.gridx = 1;
+
+            c.ipadx = 10;
 
             c.insets = new Insets(5, 0, 0 , 0);
 
             host_field = new JTextField();
             host_field.setPreferredSize(FIELD_SIZE);
+            host_field.setText("localhost");
             c.gridy = 1;
             centerPanel.add(host_field, c);
 
             port_field = new JTextField();
             port_field.setPreferredSize(FIELD_SIZE);
+            port_field.setText("46400");
             c.gridy = 2;
             centerPanel.add(port_field, c);
 
@@ -78,10 +109,42 @@ public class Window extends JFrame {
             c.gridy = 4;
             centerPanel.add(password_field, c);
 
+            // Labels
+
+            c.gridx = 0;
+
+            host_label = new JLabel("Host Address");
+            c.gridy = 1;
+            centerPanel.add(host_label, c);
+
+            port_label = new JLabel("Port");
+            c.gridy = 2;
+            centerPanel.add(port_label, c);
+
+            user_label = new JLabel("Username");
+            c.gridy = 3;
+            centerPanel.add(user_label, c);
+
+            password_label = new JLabel("Password");
+            c.gridy = 4;
+            centerPanel.add(password_label, c);
+
+            // Title and Login Button
+
+            c.gridwidth = 2;
+            c.gridx = 0;
+
             login_button = new JButton("Login");
             login_button.setPreferredSize(new Dimension(250, 45));
+            login_button.addActionListener(new LoginListener());
             c.gridy = 5;
             centerPanel.add(login_button, c);
+
+            title = new JLabel("CIM Messenger", SwingConstants.CENTER);
+            title.setFont(new Font("", Font.PLAIN, 40));
+            c.insets = new Insets(10, 10, 10 , 10);
+            c.gridy = 0;
+            centerPanel.add(title, c);
 
             add(centerPanel, BorderLayout.CENTER);
 
@@ -90,6 +153,24 @@ public class Window extends JFrame {
         class LoginListener implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
+
+                // Add checking for null here
+
+                host = Login.this.host_field.getText();
+                port = Integer.parseInt(Login.this.port_field.getText());
+                username = Login.this.username_field.getText();
+                password = new String(Login.this.password_field.getPassword());
+
+                System.out.println("Logging in!");
+                System.out.println("Host: " + host + " on port: " + port);
+                System.out.println("Username: " + username + " with password: " + password);
+
+                Window.this.client = new Client(host, port, username, password);
+
+                Window.this.setContentPane(Window.this.client);
+                Window.this.revalidate();
+
+                Window.this.client.connect();
 
             }
 

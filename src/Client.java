@@ -12,9 +12,13 @@ import javax.swing.border.EmptyBorder;
 
 public class Client extends JPanel {
 
+    private int             ANNOUNCEMENT_WIDTH = 45;
+
 	private boolean         closed          = true;
     private String          host            = "localhost";
     private int             port            = 46400;
+    private String          username;
+    private String          password;
     private ReceiveThread   receiveLoop;
     private Socket          clientSocket;
     private JTextArea       output;
@@ -43,17 +47,28 @@ public class Client extends JPanel {
 
     }
 
+    public Client(String host, int port, String user, String password) {
+        this();
+        this.host = host;
+        this.port = port;
+        this.username = user;
+        this.password = password;
+    }
+
     public void sendMessage(String message) {
         outputStream.println(message);
     }
 
-    public void addMessageToView(String message) {
+    public void print(String message) {
         this.output.append(message + "\n");
     }
 
     public void connect() {
 
-        addMessageToView("Attempting to connect to server at '" + this.host + "' . . .");
+        print("=========== CIM Messenger ===========");
+        print("Welcome to CIM Messenger 0.2b");
+        print("Attempting to connect to server at " + this.host + ":" + this.port);
+        print("Logging with as " + this.username);
     	
         try {
             clientSocket = new Socket(this.host, this.port);
@@ -62,11 +77,18 @@ public class Client extends JPanel {
             outputStream = new PrintWriter(this.clientSocket.getOutputStream(), true);
         } catch (java.net.ConnectException ex) {
         	System.out.println("Error connecting");
-        	addMessageToView("Error connecting to server! Please retry");
+        	print("Error connecting to server! Please restart the program");
+        	print("=========== Goodbye ===========");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
+    }
+
+    public String getAnnouncementString(String announcement) {
+        String announcementString;
+
+        return announcementString;
     }
 
     class EnterAction implements ActionListener {
@@ -87,7 +109,7 @@ public class Client extends JPanel {
                     String msg;
                     while ((msg = socketIn.readLine()) != null) {
                         System.out.println(msg);
-                        Client.this.addMessageToView(msg);
+                        Client.this.print(msg);
                     }
                 }
             } catch (IOException ex) {
