@@ -12,7 +12,7 @@ import javax.swing.border.EmptyBorder;
 
 public class Client extends JPanel {
 
-    private int             ANNOUNCEMENT_WIDTH = 45;
+    private int             ANNOUNCEMENT_WIDTH = 70;
 
 	private boolean         closed          = true;
     private String          host            = "localhost";
@@ -36,7 +36,8 @@ public class Client extends JPanel {
         input.addActionListener(new EnterAction());
 
         output = new JTextArea();
-        output.setPreferredSize(new Dimension(50,50));
+        output.setFont(new Font("monospaced", Font.PLAIN, 12));
+        //output.setPreferredSize(new Dimension(50,50));
         output.setLineWrap(true);
         output.setEditable(false);
         output.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -65,8 +66,7 @@ public class Client extends JPanel {
 
     public void connect() {
 
-        print("=========== CIM Messenger ===========");
-        print("Welcome to CIM Messenger 0.2b");
+        postAnnouncement("Welcome to CIM Messenger 0.2b");
         print("Attempting to connect to server at " + this.host + ":" + this.port);
         print("Logging with as " + this.username);
     	
@@ -78,23 +78,44 @@ public class Client extends JPanel {
         } catch (java.net.ConnectException ex) {
         	System.out.println("Error connecting");
         	print("Error connecting to server! Please restart the program");
-        	print("=========== Goodbye ===========");
+        	postAnnouncement("Goodbye!");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
     }
 
-    public String getAnnouncementString(String announcement) {
-        String announcementString;
+    public void postAnnouncement(String announcement) {
+        print(getAnnouncementString(announcement));
+    }
 
+    public String getAnnouncementString(String announcement) {
+        String padding = "", extraPadding = "";
+        String announcementString;
+        int len = announcement.length();
+        if (len > (ANNOUNCEMENT_WIDTH - 4)) {
+            // TODO: Deal with this better
+            announcement = "Announcement too long";
+            len = announcement.length();
+        }
+        int totalPadding = ANNOUNCEMENT_WIDTH - (len + 2);
+        int paddingLen = totalPadding / 2;
+        int extraPaddingLen = totalPadding % 2;
+        for (int i = 0; i < paddingLen; i++) {
+            padding = padding + "=";
+        }
+        for (int i = 0; i < extraPaddingLen; i++) {
+            extraPadding = extraPadding + "=";
+        }
+        announcementString = padding + " " + announcement + " " + extraPadding + padding;
         return announcementString;
     }
 
     class EnterAction implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            Client.this.sendMessage(Client.this.input.getText());
+            //Client.this.sendMessage(Client.this.input.getText());
+            Client.this.print(Client.this.input.getText());
             Client.this.output.setCaretPosition(output.getDocument().getLength());
             Client.this.input.setText("");
         }
