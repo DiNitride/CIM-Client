@@ -12,7 +12,7 @@ import javax.swing.border.EmptyBorder;
 
 public class Client extends JPanel {
 
-    private int             ANNOUNCEMENT_WIDTH = 70;
+    private int             ANNOUNCEMENT_WIDTH = 90;
 
 	private boolean         closed          = true;
     private String          host            = "localhost";
@@ -73,6 +73,7 @@ public class Client extends JPanel {
         try {
             clientSocket = new Socket(this.host, this.port);
             this.closed = false;
+            handshake();
             receiveLoop = new ReceiveThread();  receiveLoop.start();
             outputStream = new PrintWriter(this.clientSocket.getOutputStream(), true);
         } catch (java.net.ConnectException ex) {
@@ -109,6 +110,26 @@ public class Client extends JPanel {
         }
         announcementString = padding + " " + announcement + " " + extraPadding + padding;
         return announcementString;
+    }
+
+    public boolean handshake() {
+        int stage = 0;
+        while (!(stage == 3)) {
+            try {
+                while (!Client.this.closed) {
+                    BufferedReader socketIn = new BufferedReader(new InputStreamReader(Client.this.clientSocket.getInputStream()));
+                    String data;
+                    while ((data = socketIn.readLine()) != null) {
+                        if (stage == 0) {
+
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return true;
     }
 
     class EnterAction implements ActionListener {
