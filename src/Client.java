@@ -19,6 +19,7 @@ public class Client extends JPanel {
     private int             port            = 46400;
     private String          username;
     private String          password;
+    private String          token;
     private ReceiveThread   receiveLoop;
     private Socket          clientSocket;
     private JTextArea       output;
@@ -78,6 +79,7 @@ public class Client extends JPanel {
             outputStream = new PrintWriter(this.clientSocket.getOutputStream(), true);
         } catch (java.net.ConnectException ex) {
         	System.out.println("Error connecting");
+
         	print("Error connecting to server! Please restart the program");
         	postAnnouncement("Goodbye!");
         } catch (IOException ex) {
@@ -121,7 +123,16 @@ public class Client extends JPanel {
                     String data;
                     while ((data = socketIn.readLine()) != null) {
                         if (stage == 0) {
-
+                            // Connection accepted, send authorization data
+                            // if (code == 001):
+                            sendMessage("003 + timestamp + token + username + pass");
+                            stage++;
+                        } else if (stage == 1) {
+                            // Auth accepted or unaccepted, if accepted respond with token
+                            stage++;
+                        } else if (stage == 2) {
+                            // Server ready with connection, unlock interface for user
+                            stage++;
                         }
                     }
                 }
@@ -136,7 +147,7 @@ public class Client extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
             //Client.this.sendMessage(Client.this.input.getText());
-            Client.this.print(Client.this.input.getText());
+            Client.this.print(Client.this.input.getText()); // just print for now
             Client.this.output.setCaretPosition(output.getDocument().getLength());
             Client.this.input.setText("");
         }
