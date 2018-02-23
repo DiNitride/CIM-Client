@@ -115,6 +115,7 @@ public class Client extends JPanel {
     }
 
     public boolean handshake() {
+        Packet in;
         int stage = 0;
         while (!(stage == 3)) {
             try {
@@ -124,8 +125,11 @@ public class Client extends JPanel {
                     while ((data = socketIn.readLine()) != null) {
                         if (stage == 0) {
                             // Connection accepted, send authorization data
-                            // if (code == 001):
-                            sendMessage("003 + timestamp + token + username + pass");
+                            in = new Packet(data);
+                            if (in.type.equals("001")) {
+                                sendMessage("003 + timestamp + token + username + pass");
+                            }
+
                             stage++;
                         } else if (stage == 1) {
                             // Auth accepted or unaccepted, if accepted respond with token
