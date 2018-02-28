@@ -122,11 +122,16 @@ public class Client extends JPanel {
                 while (!Client.this.closed) {
                     BufferedReader socketIn = new BufferedReader(new InputStreamReader(Client.this.clientSocket.getInputStream()));
                     String data;
+                    System.out.println("Reading data");
                     while ((data = socketIn.readLine()) != null) {
+                        System.out.println(data);
                         if (stage == 0) {
                             // Connection accepted, send authorization data
                             in = new Packet(data);
                             if (in.type.equals("001")) {
+
+                                System.out.println("RECIEVD PACKET 001 HELLS YEAH");
+
                                 sendMessage("003 + timestamp + token + username + pass");
                             }
 
