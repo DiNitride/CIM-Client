@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Window extends JFrame {
 
@@ -161,6 +164,12 @@ public class Window extends JFrame {
                 username = Login.this.username_field.getText();
                 password = new String(Login.this.password_field.getPassword());
 
+                if (username.equals("") || password.equals("")) {
+                    return;
+                }
+
+                password = hash(password);
+
                 System.out.println("Logging in!");
                 System.out.println("Host: " + host + " on port: " + port);
                 System.out.println("Username: " + username + " with password: " + password);
@@ -172,6 +181,26 @@ public class Window extends JFrame {
 
                 Window.this.client.connect();
 
+            }
+
+            private String hash(String input) {
+                try {
+                    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                    byte[] encodedhash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+
+                    StringBuffer hexString = new StringBuffer();
+                    for (int i = 0; i < encodedhash.length; i++) {
+                        String hex = Integer.toHexString(0xff & encodedhash[i]);
+                        if(hex.length() == 1) hexString.append('0');
+                        hexString.append(hex);
+                    }
+                    return hexString.toString();
+
+                } catch (NoSuchAlgorithmException ex) {
+                    System.out.println("SHIT");
+                }
+
+                return "";
             }
 
         }

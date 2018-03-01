@@ -58,6 +58,7 @@ public class Client extends JPanel {
     }
 
     private void sendMessage(Packet data) {
+        System.out.println("Sending packet: " + data.toString());
         this.outputStream.println(data.toString());
     }
 
@@ -75,6 +76,7 @@ public class Client extends JPanel {
             // Connect to server!
             clientSocket = new Socket(this.host, this.port);
             this.closed = false;
+            this.handshakeStage = 1;
             print("Connected to server. . .\nAuthenticating. . .");
 
             // Start receiving data
@@ -120,19 +122,48 @@ public class Client extends JPanel {
     }
 
     private void handshake(Packet handshakePacket) {
-        if (handshakePacket.type == "001") {
-            print("Received ack");
-            Packet response = new Packet("002", this.token, this.username + "." + this.password);
-            this.sendMessage(response);
-            this.handshakeStage = 2;
+        String type = handshakePacket.type;
+        switch (type) {
+            case "001": sendAuthorisation();
+                        break;
+            case "003": authorisationError();
+                        break;
+            case "004": authorisationSuccess(handshakePacket);
+                        break;
+            case "006": authorised();
+                        break;
         }
+    }
+
+    private void sendAuthorisation() {
+        Packet response = new Packet("002", this.token, this.username + "." + this.password);
+        this.sendMessage(response);
+        this.handshakeStage = 2;
+    }
+
+    private void authorisationError() {
+        print("Error authenticating! Please retry");
+        postAnnouncement("Goodbye!");
+    }
+
+    private void authorisationSuccess(Packet tokenPacket) {
+        print("Authenticated successfully!");
+        this.token = tokenPacket.payload;
+        Packet response = new Packet("005", this.token, "null");
+        this.sendMessage(response);
+        print("Awaiting confirmation that the connection has been accepted. . .");
+    }
+
+    private void authorised() {
+        this.handshakeStage = 0;
+        enableInput();
+        postAnnouncement("Client accepted, ready!");
     }
 
     class EnterAction implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            //Client.this.sendMessage(Client.this.input.getText());
-            Client.this.print(Client.this.input.getText()); // just print for now
+            Client.this.sendMessage(new Packet("100", Client.this.token, Client.this.input.getText()));
             Client.this.output.setCaretPosition(output.getDocument().getLength());
             Client.this.input.setText("");
         }
@@ -148,8 +179,11 @@ public class Client extends JPanel {
                     Packet packet;
                     while ((data = socketIn.readLine()) != null) {
                         packet = new Packet(data);
+                        System.out.println("Received new line of data: " + packet.toString());
                         if (Client.this.handshakeStage != 0) {
                             handshake(packet);
+                        } else if (packet.type.equals("100")) {
+                            print(packet.payload);
                         }
                     }
                 }
