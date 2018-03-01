@@ -12,56 +12,56 @@ import javax.swing.border.EmptyBorder;
 
 public class Client extends JPanel {
 
-    private int             ANNOUNCEMENT_WIDTH = 90;
+    private static          int ANNOUNCEMENT_WIDTH = 90;
 
 	private boolean         closed          = true;
-    private String          host            = "localhost";
-    private int             port            = 46400;
+    private String          host;
+    private int             port;
     private String          username;
     private String          password;
-    private String          token;
+    private String          token           = "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN";
     private ReceiveThread   receiveLoop;
     private Socket          clientSocket;
     private JTextArea       output;
     private JTextField      input;
     private JScrollPane     scrollOutput;
     private PrintWriter     outputStream;
+    private int             handshakeStage;
 
-    public Client() {
+    public Client(String host, int port, String user, String password) {
+
+        this.host = host;
+        this.port = port;
+        this.username = user;
+        this.password = password;
 
         setLayout(new BorderLayout());
         GridBagConstraints c = new GridBagConstraints();
 
-        input = new JTextField(30);
-        input.setBorder(new EmptyBorder(10, 10, 10, 10));
-        input.addActionListener(new EnterAction());
+        this.input = new JTextField(30);
+        this.input.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        output = new JTextArea();
-        output.setFont(new Font("monospaced", Font.PLAIN, 12));
-        //output.setPreferredSize(new Dimension(50,50));
-        output.setLineWrap(true);
-        output.setEditable(false);
-        output.setBorder(new EmptyBorder(10, 10, 10, 10));
-        scrollOutput = new JScrollPane(output);
+        this.output = new JTextArea();
+        this.output.setFont(new Font("monospaced", Font.PLAIN, 12));
+        this.output.setLineWrap(true);
+        this.output.setEditable(false);
+        this.output.setBorder(new EmptyBorder(10, 10, 10, 10));
+        this.scrollOutput = new JScrollPane(output);
 
         add(scrollOutput, BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
 
     }
 
-    public Client(String host, int port, String user, String password) {
-        this();
-        this.host = host;
-        this.port = port;
-        this.username = user;
-        this.password = password;
+    private void enableInput() {
+        this.input.addActionListener(new EnterAction());
     }
 
-    public void sendMessage(String message) {
-        outputStream.println(message);
+    private void sendMessage(Packet data) {
+        this.outputStream.println(data.toString());
     }
 
-    public void print(String message) {
+    private void print(String message) {
         this.output.append(message + "\n");
     }
 
@@ -72,11 +72,16 @@ public class Client extends JPanel {
         print("Logging with as " + this.username);
     	
         try {
+            // Connect to server!
             clientSocket = new Socket(this.host, this.port);
             this.closed = false;
-            handshake();
-            receiveLoop = new ReceiveThread();  receiveLoop.start();
+            print("Connected to server. . .\nAuthenticating. . .");
+
+            // Start receiving data
+            receiveLoop = new ReceiveThread();
+            receiveLoop.start();
             outputStream = new PrintWriter(this.clientSocket.getOutputStream(), true);
+
         } catch (java.net.ConnectException ex) {
         	System.out.println("Error connecting");
 
@@ -114,42 +119,13 @@ public class Client extends JPanel {
         return announcementString;
     }
 
-    public boolean handshake() {
-        Packet in;
-        int stage = 0;
-        while (!(stage == 3)) {
-            try {
-                while (!Client.this.closed) {
-                    BufferedReader socketIn = new BufferedReader(new InputStreamReader(Client.this.clientSocket.getInputStream()));
-                    String data;
-                    System.out.println("Reading data");
-                    while ((data = socketIn.readLine()) != null) {
-                        System.out.println(data);
-                        if (stage == 0) {
-                            // Connection accepted, send authorization data
-                            in = new Packet(data);
-                            if (in.type.equals("001")) {
-
-                                System.out.println("RECIEVD PACKET 001 HELLS YEAH");
-
-                                sendMessage("003 + timestamp + token + username + pass");
-                            }
-
-                            stage++;
-                        } else if (stage == 1) {
-                            // Auth accepted or unaccepted, if accepted respond with token
-                            stage++;
-                        } else if (stage == 2) {
-                            // Server ready with connection, unlock interface for user
-                            stage++;
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+    private void handshake(Packet handshakePacket) {
+        if (handshakePacket.type == "001") {
+            print("Received ack");
+            Packet response = new Packet("002", this.token, this.username + "." + this.password);
+            this.sendMessage(response);
+            this.handshakeStage = 2;
         }
-        return true;
     }
 
     class EnterAction implements ActionListener {
@@ -168,10 +144,13 @@ public class Client extends JPanel {
             try {
                 while (!Client.this.closed) {
                     BufferedReader socketIn = new BufferedReader(new InputStreamReader(Client.this.clientSocket.getInputStream()));
-                    String msg;
-                    while ((msg = socketIn.readLine()) != null) {
-                        System.out.println(msg);
-                        Client.this.print(msg);
+                    String data;
+                    Packet packet;
+                    while ((data = socketIn.readLine()) != null) {
+                        packet = new Packet(data);
+                        if (Client.this.handshakeStage != 0) {
+                            handshake(packet);
+                        }
                     }
                 }
             } catch (IOException ex) {
@@ -182,4 +161,3 @@ public class Client extends JPanel {
     }
 
 }
-
