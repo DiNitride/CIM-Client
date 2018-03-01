@@ -2,7 +2,7 @@
 CIM-Client.iml
 /out
 /bin
-
+/META-INF
 \.project
-
 \.classpath
+/META-INF
