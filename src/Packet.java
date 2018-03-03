@@ -23,7 +23,12 @@ public class Packet {
     }
 
     private String getIso() {
-        return LocalDateTime.now().toString().substring(0, 24);
+        String time = LocalDateTime.now().toString();
+        if (time.length() > 23) {
+            return time.substring(0, 24);
+        } else {
+            return time;
+        }
     }
 
     public String toString() {
