@@ -6,3 +6,5 @@ CIM-Client.iml
 \.project
 \.classpath
 /META-INF
+
+src/META-INF/MANIFEST\.MF

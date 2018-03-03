@@ -95,6 +95,17 @@ public class Client extends JPanel {
 
     }
 
+    public void disconnect() {
+        if (!this.closed) {
+            try {
+                this.clientSocket.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            this.closed = true;
+        }
+    }
+
     public void postAnnouncement(String announcement) {
         print(getAnnouncementString(announcement));
     }

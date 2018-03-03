@@ -1,18 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class Window extends JFrame {
+public class Window extends JFrame implements WindowListener {
 
     Client client;
 
     public Window() {
 
         super();
+        addWindowListener(this);
         setTitle("CIM Messenger");
         ImageIcon img = new ImageIcon("resources/ico.png");
         setIconImage(img.getImage());
@@ -31,6 +31,46 @@ public class Window extends JFrame {
         setVisible(true);
 
     }
+
+    @Override
+    public void windowOpened(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent windowEvent) {
+        System.out.println("DISCONNECTING");
+        if (this.client != null) {
+            this.client.disconnect();
+        }
+
+    }
+
+    @Override
+    public void windowClosed(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent windowEvent) {
+
+    }
+
 
     class Login extends JPanel {
 
