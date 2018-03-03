@@ -23,7 +23,7 @@ public class Packet {
     }
 
     private String getIso() {
-        return LocalDateTime.now().toString();
+        return LocalDateTime.now().toString().substring(0, 24);
     }
 
     public String toString() {
