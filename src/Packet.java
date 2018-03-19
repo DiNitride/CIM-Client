@@ -25,7 +25,7 @@ public class Packet {
     private String getIso() {
         String time = LocalDateTime.now().toString();
         if (time.length() > 23) {
-            return time.substring(0, 24);
+            return time.substring(0, 23);
         } else {
             return time;
         }
