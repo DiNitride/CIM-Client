@@ -144,11 +144,13 @@ public class Window extends JFrame implements WindowListener {
 
             username_field = new JTextField();
             username_field.setPreferredSize(FIELD_SIZE);
+            username_field.setText("DiniTest");
             c.gridy = 3;
             centerPanel.add(username_field, c);
 
             password_field = new JPasswordField();
             password_field.setPreferredSize(FIELD_SIZE);
+            password_field.setText("password");
             c.gridy = 4;
             centerPanel.add(password_field, c);
 

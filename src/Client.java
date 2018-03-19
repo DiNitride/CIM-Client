@@ -98,6 +98,9 @@ public class Client extends JPanel {
     public void disconnect() {
         if (!this.closed) {
             try {
+                this.closed = true;
+
+
                 this.clientSocket.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -185,10 +188,17 @@ public class Client extends JPanel {
         public void run() {
             try {
                 while (!Client.this.closed) {
+
                     BufferedReader socketIn = new BufferedReader(new InputStreamReader(Client.this.clientSocket.getInputStream()));
                     String data;
                     Packet packet;
                     while ((data = socketIn.readLine()) != null) {
+                        // The loop appears to sit here until data is read
+                        // causing an error upon disconnect because it tries to read the closed loop
+                        // therefore checking for again for Client disconnect here resolves this
+                        if (Client.this.closed) {
+                            break;
+                        }
                         packet = new Packet(data);
                         System.out.println("Received new line of data: " + packet.toString());
                         if (Client.this.handshakeStage != 0) {
