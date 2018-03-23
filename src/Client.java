@@ -227,7 +227,15 @@ public class Client extends JPanel {
          */
 
         public void actionPerformed(ActionEvent e) {
-            Client.this.sendMessage(new Packet("100", Client.this.token, Client.this.input.getText()));
+            Packet resp;
+            String msg = Client.this.input.getText();
+            if (msg.startsWith("$kick")) {
+                String payload = msg.substring(6);
+                resp = new Packet("150", Client.this.token, payload);
+            } else {
+                resp = new Packet("100", Client.this.token, msg);
+            }
+            Client.this.sendMessage(resp);
             Client.this.output.setCaretPosition(output.getDocument().getLength());
             Client.this.input.setText("");
         }
@@ -256,6 +264,8 @@ public class Client extends JPanel {
                         } else if (packet.type.equals("100")) {
                             // Otherwise, print the message
                             print(packet.payload);
+                        } else if (packet.type.equals("003")) {
+                            print("You have been disconnected from the server.");
                         }
                     }
                 }

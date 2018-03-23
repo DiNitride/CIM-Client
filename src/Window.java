@@ -40,19 +40,21 @@ public class Window extends JFrame implements WindowListener {
     }
 
     @Override
-    public void windowOpened(WindowEvent windowEvent) {
-        // Function required to implement WindowListener
-    }
-
-    @Override
     public void windowClosing(WindowEvent windowEvent) {
         // When the user closes the window, disconnect from the server properly
         System.out.println("DISCONNECTING");
         if (this.client != null) {
             this.client.disconnect();
+
         }
 
     }
+
+    @Override
+    public void windowOpened(WindowEvent windowEvent) {
+        // Function required to implement WindowListener
+    }
+
 
     @Override
     public void windowClosed(WindowEvent windowEvent) {
@@ -218,7 +220,11 @@ public class Window extends JFrame implements WindowListener {
 
                 // Get data from text input and store in variables
                 host = Login.this.host_field.getText();
-                port = Integer.parseInt(Login.this.port_field.getText());
+                try {
+                    port = Integer.parseInt(Login.this.port_field.getText());
+                } catch (NumberFormatException ex) {
+                    return;
+                }
                 username = Login.this.username_field.getText();
                 password = new String(Login.this.password_field.getPassword());
 
@@ -254,7 +260,7 @@ public class Window extends JFrame implements WindowListener {
                     // Create a message digest object
                     MessageDigest digest = MessageDigest.getInstance("SHA-256");
                     // Turn hash string into array of bytes
-                    byte[] encodedhash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+                    byte[] encodedhash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
                     // Create a string buffer to enter characters into
                     StringBuffer hexString = new StringBuffer();
                     // For every hashed byte in the array
